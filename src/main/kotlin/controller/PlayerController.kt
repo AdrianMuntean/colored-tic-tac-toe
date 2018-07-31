@@ -5,12 +5,13 @@ import ai.StrategyFactory
 import const.NONE
 import const.PLAYER1
 import const.PLAYER2
-import const.RANDOM_STRATEGY
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.Background
 import javafx.scene.text.Font
 import views.MainView
 import views.data.Backgrounds
+import java.util.*
 import kotlin.properties.Delegates
 
 class PlayerController(view: MainView, label: Label) {
@@ -21,6 +22,7 @@ class PlayerController(view: MainView, label: Label) {
     private var mainView: MainView by Delegates.notNull()
     private val player1Chose = mutableSetOf<Int>()
     private val player2Chose = mutableSetOf<Int>()
+    private val buttonMap = mutableMapOf<Int, Button>()
 
     private var aiController: Strategy? = null
 
@@ -56,6 +58,7 @@ class PlayerController(view: MainView, label: Label) {
         player1Turn = true
         label.text = ""
         cellsChosen = 0
+        println("CLEANUP $player1Turn")
     }
 
     private fun gameWinner(set: MutableSet<Int>): Boolean {
@@ -86,22 +89,73 @@ class PlayerController(view: MainView, label: Label) {
 
     fun updatePick(cellName: Int) {
         cellsChosen++
-//        val color  = if (player1Turn) Backgrounds.clickedGreen() else Backgrounds.clickedRed()
         val gameWinner = updateSelection(cellName)
-        if (gameWinner) {
-            endGame(currentPlayer())
+        val aiGameWinner = updateAIPickIfNeeded()
+        when {
+            gameWinner -> endGame(if (aiController == null)  currentPlayer() else PLAYER1)
+            aiGameWinner -> endGame("AI")
+            noWinner() -> endGame(NONE)
+            else -> {
+                player1Turn = !player1Turn
+                println("UPDATE $player1Turn")
+                updateLabel()
+            }
         }
-        if (noWinner()) {
-            endGame(NONE)
+    }
+
+    private fun updateAIPickIfNeeded(): Boolean {
+        if (aiController == null || noWinner()) {
+            return false
         }
+        println("Ai need to pick")
+
+        val button = nextRandomPick()
+
+        button?.disableProperty()?.set(true)
         player1Turn = !player1Turn
-        updateLabel()
+        button?.background = Backgrounds.clickedRed()
+        cellsChosen++
+
+        if (gameWinner(player2Chose)) {
+            println("Random AI has won")
+            label.text = "Random AI WON!!"
+            label.fontProperty().set(Font.font(40.0))
+            return true
+        }
+
+        return false
+    }
+
+    private fun nextRandomPick(): Button? {
+        val selectedButtons = player1Chose + player2Chose
+
+        var randomInt = (0..8).random()
+        while (randomInt in selectedButtons) {
+            randomInt = (0..8).random()
+        }
+        val button = buttonMap[randomInt]
+
+        println("DONE PICKING $randomInt")
+        player2Chose.add(randomInt)
+
+        return button
     }
 
     fun getColor(): Background? = if (player1Turn) Backgrounds.clickedGreen() else Backgrounds.clickedRed()
 
     fun useAI(strategyName: String) {
         aiController = StrategyFactory.createStrategy(strategyName)
-        TODO("implement AI Control")
+    }
+
+    fun addButton(name: Int, button: Button) {
+        buttonMap[name] = button
+    }
+
+    private fun ClosedRange<Int>.random() =
+            Random().nextInt((endInclusive + 1) - start) + start
+
+    fun clearAll() {
+        clear()
+        aiController = null
     }
 }

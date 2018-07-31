@@ -27,6 +27,7 @@ class TicTacButton {
             button.onHover {
             }
 
+            controller.addButton(name, button)
             return button
         }
 

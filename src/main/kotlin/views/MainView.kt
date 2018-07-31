@@ -10,6 +10,7 @@ import javafx.scene.layout.CornerRadii
 import javafx.scene.layout.FlowPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import javafx.stage.StageStyle
 import tornadofx.*
 import views.data.InfoBar
 import views.data.TicTacButton
@@ -18,7 +19,7 @@ class MainView : View("Tic-tac-toe") {
     override val root = FlowPane()
     private val controller = PlayerController(this, InfoBar.label)
     private val twoPlayersButton = ButtonType("2 players", ButtonBar.ButtonData.YES)
-    private val onePlayerWithAI = ButtonType("AI", ButtonBar.ButtonData.NO)
+    private val onePlayerWithAI = ButtonType("Computer", ButtonBar.ButtonData.NO)
 
     init {
         super.setWindowMaxSize(617, 700)
@@ -75,11 +76,15 @@ class MainView : View("Tic-tac-toe") {
     }
 
     private fun showGameModeAlert() {
-        alert(Alert.AlertType.CONFIRMATION, "2 players or with computer?", "Only 2 players supported at the moment  ", actionFn = { btnType ->
+        alert(Alert.AlertType.CONFIRMATION, "2 players or with computer?", "", actionFn = { btnType ->
             if (btnType.buttonData == ButtonBar.ButtonData.NO) {
                 controller.useAI(RANDOM_STRATEGY)
             }
-        }, buttons = *arrayOf(twoPlayersButton/*, onePlayerWithAI*/))
+            //NOTE not needed cause this is the default value
+//            if (btnType.buttonData == ButtonBar.ButtonData.YES) {
+//
+//            }
+        }, buttons = *arrayOf(twoPlayersButton, onePlayerWithAI))
     }
 
     fun gameEnded(winningPlayer: String) {
@@ -101,7 +106,7 @@ class MainView : View("Tic-tac-toe") {
     private fun restartGame() {
         println("Restarting the game!")
         root.clear()
-        controller.clear()
+        controller.clearAll()
         addContent(root)
     }
 

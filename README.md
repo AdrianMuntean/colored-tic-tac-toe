@@ -6,4 +6,4 @@
 
  It has 2 game modes:
  1. Player vs player - take turn in choosing the box 
- 2. Player vs computer - player can choose between different levels of difficulty. **Not yet implemented!** 
+ 2. Player vs computer - player can choose between different levels of difficulty. **Super easy implemented only (Random strategy)** 
